@@ -30,3 +30,29 @@ Additionally, the system uses **Redis caching** for seat availability reads (a r
 - View seat availability (cached, with automatic invalidation on writes)
 
 ## Concurrency Test Results
+Total successful bookings: 1 (should be exactly 1)
+Total wall-clock time for all 10 requests: 0.032s
+Average individual request time: 0.027s
+
+
+10 simultaneous requests were fired at the same seat using Python threading. Only one succeeded; the rest correctly received `409 Conflict` responses — proving the locking mechanism prevents race conditions under real concurrent load, not just sequential requests.
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/users/` | Create a user |
+| POST | `/events/` | Create an event (auto-generates seats) |
+| GET | `/events/{event_id}/seats` | View seat availability (cached) |
+| POST | `/bookings/` | Book a seat (pessimistic locking) |
+| POST | `/bookings/optimistic/` | Book a seat (optimistic locking) |
+| DELETE | `/bookings/{booking_id}` | Cancel a booking |
+
+## Setup
+
+1. Clone the repo
+2. Create a virtual environment and install dependencies: `pip install -r requirements.txt`
+3. Set up PostgreSQL and Redis locally
+4. Copy `.env.example` to `.env` and fill in your database URL
+5. Run: `uvicorn main:app --reload`
+6. Visit `http://localhost:8000/docs` for interactive API documentation
